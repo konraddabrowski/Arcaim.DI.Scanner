@@ -25,6 +25,18 @@ namespace Arcaim.DI.Scanner
             return this;
         }
 
+        public IScan InheritedFrom(Type searchedType)
+        {
+            _scannedTypes = _assemblies.SelectMany(assembly => assembly.GetTypes())
+                .Where(type => type.IsClass &&
+                    !type.IsAbstract &&
+                    !type.IsInterface &&
+                    !type.IsGenericType &&
+                    type.BaseType.Name.Equals(searchedType.Name, StringComparison.InvariantCulture));
+
+            return this;
+        }
+
         public IScan ByAppAssemblies()
         {
             _assemblies = Directory
@@ -34,10 +46,18 @@ namespace Arcaim.DI.Scanner
             return this;
         }
 
-        public void WithTransientLifetime()
-            => _scannedTypes.ToList().ForEach(type => type.GetInterfaces().ToList()
-                .ForEach(implementedInterfaces =>
-                    _services.AddTransient(implementedInterfaces, type)
-                ));
+        public void WithTransientLifetime() => _scannedTypes.ToList().ForEach(type =>
+        {
+            if (type.BaseType.IsAbstract)
+            {
+                _services.AddTransient(type.BaseType, type);
+
+                return;
+            }
+
+            type.GetInterfaces().ToList().ForEach(implementedInterfaces =>
+                _services.AddTransient(implementedInterfaces, type)
+            );
+        });
     }
 }

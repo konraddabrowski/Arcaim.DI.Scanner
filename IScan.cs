@@ -6,6 +6,7 @@ namespace Arcaim.DI.Scanner
     {
         IScan ByAppAssemblies();
         IScan ImplementationOf(Type type);
+        IScan InheritedFrom(Type type);
         void WithTransientLifetime();
     }
 }
