@@ -18,8 +18,16 @@ public Scan(IServiceCollection services)
 
   public IScan ImplementationOf(Type searchedType)
   {
-    _scannedTypes = _assemblies.SelectMany(assembly => assembly.GetTypes())
-      .Where(type => !type.IsInterface && !type.IsAbstract && type.GetInterfaces()
+    var types = _assemblies.SelectMany(assembly => assembly.GetTypes());
+    if (searchedType.IsAbstract && !searchedType.IsInterface)
+    {
+      _scannedTypes = types.Where(x => x.BaseType is not null && !x.ContainsGenericParameters &&
+        x.BaseType.Name.Equals(searchedType.Name, StringComparison.InvariantCulture));
+
+        return this;
+    }
+
+    _scannedTypes = types.Where(type => !type.IsInterface && !type.IsAbstract && type.GetInterfaces()
       .Any(y => y.Name.Equals(searchedType.Name, StringComparison.InvariantCulture)));
 
     return this;
