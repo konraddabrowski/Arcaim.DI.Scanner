@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -10,24 +6,24 @@ namespace Arcaim.DI.Scanner;
 public class Scan : IScan
 {
   private readonly IServiceCollection _services;
-  private IEnumerable<Assembly> _assemblies;
-  private IEnumerable<Type> _scannedTypes;
+  private IEnumerable<Assembly>? _assemblies;
+  private IEnumerable<Type>? _scannedTypes;
 
 public Scan(IServiceCollection services)
-    => _services = services;
+    => _services = services ?? throw new Exception();
 
   public IScan ImplementationOf(Type searchedType)
   {
-    var types = _assemblies.SelectMany(assembly => assembly.GetTypes());
+    var types = _assemblies?.SelectMany(assembly => assembly.GetTypes());
     if (searchedType.IsAbstract && !searchedType.IsInterface)
     {
-      _scannedTypes = types.Where(x => x.BaseType is not null && !x.ContainsGenericParameters &&
+      _scannedTypes = types?.Where(x => x.BaseType is not null && !x.ContainsGenericParameters &&
         x.BaseType.Name.Equals(searchedType.Name, StringComparison.InvariantCulture));
 
         return this;
     }
 
-    _scannedTypes = types.Where(type => !type.IsInterface && !type.IsAbstract && type.GetInterfaces()
+    _scannedTypes = types?.Where(type => !type.IsInterface && !type.IsAbstract && type.GetInterfaces()
       .Any(y => y.Name.Equals(searchedType.Name, StringComparison.InvariantCulture)));
 
     return this;
@@ -35,11 +31,12 @@ public Scan(IServiceCollection services)
 
   public IScan InheritedFrom(Type searchedType)
   {
-    _scannedTypes = _assemblies.SelectMany(assembly => assembly.GetTypes())
+    _scannedTypes = _assemblies?.SelectMany(assembly => assembly.GetTypes())
       .Where(type => type.IsClass &&
         !type.IsAbstract &&
         !type.IsInterface &&
         !type.IsGenericType &&
+        type.BaseType is not null &&
         type.BaseType.Name.Equals(searchedType.Name, StringComparison.InvariantCulture));
 
     return this;
@@ -54,9 +51,9 @@ public Scan(IServiceCollection services)
     return this;
   }
 
-  public void WithTransientLifetime() => _scannedTypes.ToList().ForEach(type =>
+  public void WithTransientLifetime() => _scannedTypes?.ToList().ForEach(type =>
   {
-    if (type.BaseType.IsAbstract)
+    if (type.BaseType?.IsAbstract ?? false)
     {
       _services.AddTransient(type.BaseType, type);
 

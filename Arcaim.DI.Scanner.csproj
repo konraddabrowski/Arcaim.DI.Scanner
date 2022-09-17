@@ -3,14 +3,16 @@
   <PropertyGroup>
     <Description>The Assembly DI library provides to register services using assembly scanning</Description>
     <Authors>Konrad Dąbrowski</Authors>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>preview</LangVersion>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <LangVersion>Latest</LangVersion>
     <AssemblyName>Arcaim.DI.Scanner</AssemblyName>
     <Title>Arcaim.DI.Scanner</Title>
     <PackageId>Arcaim.DI.Scanner</PackageId>
     <Company>Arcaim</Company>
-    <Version>6.0.1</Version>
+    <Version>7.0.0-preview7</Version>
   </PropertyGroup>
 
   <ItemGroup>
